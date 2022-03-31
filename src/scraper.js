@@ -6,8 +6,10 @@ const createMessage = (content) => `[scraper] ${date()} ${content}`
 
 async function scrapeAssets({ onProgress }) {
   const browser = await puppeteer.launch({
-    executablePath: '/usr/bin/google-chrome',
-    args: ['--no-sandbox'],
+    ...(process.env.IS_DOCKER ? {
+      executablePath: '/usr/bin/google-chrome',
+      args: ['--no-sandbox'],
+    } : {}),
     headless: true
   })
   onProgress(createMessage('Browser opened'))
