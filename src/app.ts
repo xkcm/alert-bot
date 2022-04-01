@@ -1,24 +1,18 @@
-const { scrapeAssets } = require('./scraper')
-import { repeatTask } from './scheduler'
-import { loadMailingList, sendAlertMails, sendTestMails, sendErrorMail } from './mailer'
-const { filterAssetsByThresholds, createTimeout, date } = require('./helpers')
-const { INTERVAL_MS, TIMEOUT_MS } = require('./consts')
+import { loadJSONConfiguration, parseArgs } from './helpers'
+import { registerBuiltinStrategies } from './strategies'
 
-const mailingList = loadMailingList()
+// async function roundtrip() {
+//   const assets = await Promise.race([
+//     scrapeAssets({ onProgress: console.log }), createTimeout(TIMEOUT_MS)
+//   ])
+//   const mailEntries = filterAssetsByThresholds(assets, mailingList)
+//   if (mailEntries.length > 0) {
+//     await sendAlertMails(mailEntries, { onProgress: console.log })
+//   }
+// }
 
-const createMessage = content => `[app] ${date()} ${content}`
-
-async function roundtrip() {
-  const assets = await Promise.race([
-    scrapeAssets({ onProgress: console.log }), createTimeout(TIMEOUT_MS)
-  ])
-  const mailEntries = filterAssetsByThresholds(assets, mailingList)
-  if (mailEntries.length > 0) {
-    await sendAlertMails(mailEntries, { onProgress: console.log })
-  }
-}
-
-async function main() {
+export async function run() {
+  const errorHandler = (...args) => { console.log(...args) }
   // if (!process.argv.includes('--no-test')) {
   //   await sendTestMails(mailingList, { onProgress: console.log })
   // }
@@ -32,6 +26,12 @@ async function main() {
   //   await sendErrorMail(error, { onProgress: console.log })
   //   process.exit(0)
   // })
+  await registerBuiltinStrategies()
+  const { c: configFilePath } = await parseArgs(process.argv)
+  const config = await loadJSONConfiguration({ path: configFilePath }).catch(errorHandler)
 }
 
-main()
+if (require.main === module)
+  run().catch(console.error)
+
+export { registerCustomStrategy } from './strategies/index'
