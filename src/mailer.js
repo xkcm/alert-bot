@@ -1,12 +1,11 @@
-import { resolve } from 'path'
-import nodemailer from 'nodemailer'
-import { MAILING_LIST_NOT_PROVIDED_ERROR_MESSAGE, INCORRECT_MAIL_CONFIG_ERROR_MESSAGE } from './consts'
-import { loadEnv, date } from './helpers'
-import { OnProgressHandler } from './types'
+const { resolve } = require('path')
+const nodemailer = require('nodemailer')
+const { MAILING_LIST_NOT_PROVIDED_ERROR_MESSAGE, INCORRECT_MAIL_CONFIG_ERROR_MESSAGE } = require('./consts')
+const { loadEnv, date } = require('./helpers')
 
-const createMessage = (content) => `[mailer] ${date()} ${content}`
+const createMessage = content => `[mailer] ${date()} ${content}`
 
-export function loadMailingList() {
+function loadMailingList() {
   const argIndex = process.argv.findIndex(arg => arg === '-u')
   if (argIndex === -1) throw new Error(MAILING_LIST_NOT_PROVIDED_ERROR_MESSAGE)
   const filePath = process.argv.at(argIndex+1)
@@ -15,7 +14,7 @@ export function loadMailingList() {
   return require(path)
 }
 
-export function getTransport() {
+function getTransport() {
   const env = loadEnv()
   if (!env.MAIL_SERVICE || !env.MAIL_USER || !env.MAIL_PASS) {
     throw new Error(INCORRECT_MAIL_CONFIG_ERROR_MESSAGE)
@@ -29,7 +28,7 @@ export function getTransport() {
   })
 }
 
-export function sendMail(mailOptions) {
+function sendMail(mailOptions) {
   const transport = getTransport()
   return transport.sendMail({
     ...mailOptions,
@@ -37,7 +36,7 @@ export function sendMail(mailOptions) {
   })
 }
 
-export function sendTestMails(mailingList, { onProgress }: { onProgress?: OnProgressHandler }) {
+function sendTestMails(mailingList, { onProgress } = { onProgress: () => {}}) {
   return Promise.all(mailingList.map(entry => {
     const mailOptions = {
       to: entry.mail,
@@ -49,7 +48,7 @@ export function sendTestMails(mailingList, { onProgress }: { onProgress?: OnProg
   }))
 }
 
-export function sendAlertMails(mailEntries, { onProgress }: { onProgress: OnProgressHandler }) {
+function sendAlertMails(mailEntries, { onProgress } = { onProgress: () => {}}) {
   const createMailMessage = (entry) => {
     return entry.assets.map(({ asset, liquidity }) => (
       `\nAsset: ${asset}\nLiquidity: ${liquidity.value} ${liquidity.currency}\n`
@@ -67,7 +66,7 @@ export function sendAlertMails(mailEntries, { onProgress }: { onProgress: OnProg
   }))
 }
 
-export function sendErrorMail(error, { onProgress }: { onProgress: OnProgressHandler }) {
+function sendErrorMail(error, { onProgress } = { onProgress: () => {}}) {
   const mailOptions = {
     to: loadEnv().ADMIN_MAIL,
     subject: 'Liquidity Alert - Error occurred',
@@ -75,4 +74,11 @@ export function sendErrorMail(error, { onProgress }: { onProgress: OnProgressHan
   }
   onProgress(createMessage(`Sending error message to ${mailOptions.to}`))
   return sendMail(mailOptions).then(() => onProgress(createMessage(`Mail sent to ${mailOptions.to}`)))
+}
+
+module.exports = {
+  loadMailingList,
+  sendAlertMails,
+  sendTestMails,
+  sendErrorMail
 }

@@ -1,16 +1,16 @@
-import * as puppeteer from 'puppeteer'
-import { SCRAPED_SITE_URL, TARGET_SELECTOR, TARGET_VALUE_SELECTOR } from './consts'
-import { date } from './helpers'
+const puppeteer = require('puppeteer')
+const { SCRAPED_SITE_URL, TARGET_SELECTOR, TARGET_VALUE_SELECTOR } = require('./consts')
+const { date } = require('./helpers')
 
 const createMessage = (content) => `[scraper] ${date()} ${content}`
 
-export async function scrapeAssets({ onProgress }) {
+async function scrapeAssets({ onProgress }) {
   const browser = await puppeteer.launch({
     ...(process.env.IS_DOCKER ? {
       executablePath: '/usr/bin/google-chrome',
       args: ['--no-sandbox'],
     } : {}),
-    headless: false
+    headless: true
   })
   onProgress(createMessage('Browser opened'))
   const page = await browser.newPage()
@@ -23,9 +23,7 @@ export async function scrapeAssets({ onProgress }) {
     return els.map(el => {
       let [
         asset, apy, wallet, liquidity
-      ] = [
-        ...el.querySelectorAll(TARGET_VALUE_SELECTOR)
-      ].map(valueEl => valueEl.textContent)
+      ] = [...el.querySelectorAll(TARGET_VALUE_SELECTOR)].map(valueEl => valueEl.textContent)
       apy = apy.replace(/\s+/g, '')
       asset = asset.replace(apy, '')
       wallet = {
@@ -45,4 +43,8 @@ export async function scrapeAssets({ onProgress }) {
   await browser.close()
   onProgress(createMessage('Browser closed'))
   return result
+}
+
+module.exports = {
+  scrapeAssets
 }
