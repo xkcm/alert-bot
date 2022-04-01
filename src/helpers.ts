@@ -3,7 +3,7 @@ const { resolve } = require('path')
 
 const assetMap = new Map()
 
-function filterAssetsByThresholds(results, mailingList) {
+export function filterAssetsByThresholds(results, mailingList) {
   return mailingList.map(entry => {
     const { threshold } = entry
     const filtered = results.filter(({ asset, liquidity: { value } }) => (
@@ -17,21 +17,17 @@ function filterAssetsByThresholds(results, mailingList) {
   }).filter(({ assets }) => assets.length > 0)
 }
 
-function loadEnv() {
+export function loadEnv() {
   return dotenv.config({
-    path: resolve(__dirname, '.env')
+    path: resolve(__dirname, '..', '.env')
   }).parsed
 }
 
-function createTimeout(ms) {
+export function createTimeout(ms) {
   return new Promise((res, rej) => setTimeout(() => rej(`Timeout of ${ms}ms exceeded.`), ms))
 }
 
-const date = () => new Date().toISOString()
+export const date = () => new Date().toISOString()
 
-module.exports = {
-  filterAssetsByThresholds,
-  loadEnv,
-  date,
-  createTimeout
+export async function loadConfiguration() {
 }

@@ -1,6 +1,6 @@
 const { scrapeAssets } = require('./scraper')
-const { repeatTask } = require('./scheduler')
-const { loadMailingList, sendAlertMails, sendTestMails, sendErrorMail } = require('./mailer')
+import { repeatTask } from './scheduler'
+import { loadMailingList, sendAlertMails, sendTestMails, sendErrorMail } from './mailer'
 const { filterAssetsByThresholds, createTimeout, date } = require('./helpers')
 const { INTERVAL_MS, TIMEOUT_MS } = require('./consts')
 
@@ -19,19 +19,19 @@ async function roundtrip() {
 }
 
 async function main() {
-  if (!process.argv.includes('--no-test')) {
-    await sendTestMails(mailingList, { onProgress: console.log })
-  }
-  const { stop, task } = repeatTask({
-    timeInMs: INTERVAL_MS,
-    task: roundtrip
-  }, { onProgress: console.log })
-  task.catch(async (error) => {
-    stop()
-    console.error(createMessage('Error occured:'), error)
-    await sendErrorMail(error, { onProgress: console.log })
-    process.exit(0)
-  })
+  // if (!process.argv.includes('--no-test')) {
+  //   await sendTestMails(mailingList, { onProgress: console.log })
+  // }
+  // const { stop, task } = repeatTask({
+  //   timeInMs: INTERVAL_MS,
+  //   task: roundtrip
+  // }, { onProgress: content => console.log(`[scheduler] ${date()} ${content}`) })
+  // task.catch(async (error) => {
+  //   stop()
+  //   console.error(createMessage('Error occured:'), error)
+  //   await sendErrorMail(error, { onProgress: console.log })
+  //   process.exit(0)
+  // })
 }
 
 main()

@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "ES2020",
+      "DOM.Iterable",
+      "DOM"
+    ],
+    "target": "ES2020",
+    "downlevelIteration": true,
+    "moduleResolution": "node",
+    "outDir": "build/"
+  },
+  "include": [
+    "src/*"
+  ]
+}
