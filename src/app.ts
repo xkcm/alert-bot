@@ -1,5 +1,6 @@
 import { loadJSONConfiguration, parseArgs } from './helpers'
-import { registerBuiltinStrategies } from './strategies'
+import { registerBuiltinSchemes } from './schemes'
+import { BotConfiguration } from './types'
 
 // async function roundtrip() {
 //   const assets = await Promise.race([
@@ -11,7 +12,7 @@ import { registerBuiltinStrategies } from './strategies'
 //   }
 // }
 
-export async function run() {
+async function run() {
   const errorHandler = (...args) => { console.log(...args) }
   // if (!process.argv.includes('--no-test')) {
   //   await sendTestMails(mailingList, { onProgress: console.log })
@@ -26,12 +27,17 @@ export async function run() {
   //   await sendErrorMail(error, { onProgress: console.log })
   //   process.exit(0)
   // })
-  await registerBuiltinStrategies()
+  await registerBuiltinSchemes()
   const { c: configFilePath } = await parseArgs(process.argv)
-  const config = await loadJSONConfiguration({ path: configFilePath }).catch(errorHandler)
+  const config: BotConfiguration.Root = await loadJSONConfiguration({ path: configFilePath }).catch(errorHandler)
+  return start(config)
+}
+
+export async function start(config: BotConfiguration.Root) {
+
 }
 
 if (require.main === module)
   run().catch(console.error)
 
-export { registerCustomStrategy } from './strategies/index'
+export { registerCustomScheme } from './schemes/index'
