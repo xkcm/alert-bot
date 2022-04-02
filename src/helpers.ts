@@ -59,7 +59,9 @@ export function parseArgs(argv: string[]) {
     .argv
 }
 
-export async function listFilesInDirectory({ path, allowedExtensions = [], exclude = [], resolvePaths = false }: ListFilesInDirectoryOptions) {
+export async function listFilesInDirectory({
+  path, allowedExtensions = [], exclude = [], resolvePaths = false
+}: ListFilesInDirectoryOptions) {
   console.log(path)
   let files = await readdir(path)
   files = allowedExtensions.length > 0
@@ -85,4 +87,8 @@ export async function loadModule<T>({ path, pluckModule = false, pluckDefault = 
 
 export function loadModules({ paths, ...rest }: LoadModulesOptions) {
   return Promise.all(paths.map(path => loadModule({ path, ...rest })))
+}
+
+export function staticImplements<T>() {
+  return <U extends T>(constructor: U) => {constructor};
 }

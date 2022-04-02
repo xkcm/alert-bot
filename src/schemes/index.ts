@@ -1,15 +1,22 @@
-import { Scheme } from '../types'
-import { listFilesInDirectory, loadModules } from '../helpers'
+import { resolve } from 'path'
 import { InvalidSchemeModuleError, SchemeNameConflictError, UndefinedSchemeError } from '../errors/schemes'
+import { listFilesInDirectory, loadModules } from '../helpers'
+import { Scheme } from '../types'
 
-const schemes = new Map<string, Scheme>()
+type RegisteredScheme = {
+  schemeClass: Scheme,
+  type: 'built-in' | 'custom'
+}
+
+const schemes = new Map<string, RegisteredScheme>()
 
 export function validateScheme(scheme: Scheme) {
-  for (let prop of ['type', 'name', 'roundtrip']) {
+  const requiredProps = ['type', 'schemeName', 'roundtrip']
+  requiredProps.forEach(prop => {
     if (Reflect.has(scheme, prop)) {
       throw new InvalidSchemeModuleError(prop)
     }
-  }
+  })
   return true
 }
 
@@ -21,25 +28,26 @@ export function getScheme(schemeName: string, silent: boolean = false) {
   return scheme
 }
 
-function registerScheme(scheme: Scheme) {
-  validateScheme(scheme)
-  const { name } = scheme
-  if (schemes.has(name)) {
-    throw new SchemeNameConflictError(name)
+function registerScheme(scheme: RegisteredScheme) {
+  validateScheme(scheme.schemeClass)
+  const { id } = scheme.schemeClass
+  if (schemes.has(id)) {
+    throw new SchemeNameConflictError(id)
   }
-  schemes.set(name, scheme)
-  return schemes.has(name)
+  schemes.set(id, scheme)
+  return schemes.has(id)
 }
 
-export function registerCustomScheme(scheme: Omit<Scheme, 'type'>) {
-  return registerScheme(Object.assign(scheme, {
+export function registerCustomScheme(scheme: Scheme) {
+  return registerScheme({
+    schemeClass: scheme,
     type: 'custom'
-  } as const))
+  } as const)
 }
 
 export async function registerBuiltinSchemes() {
   const javascriptModules = await listFilesInDirectory({
-    path: __dirname,
+    path: resolve(__dirname, 'built-in'),
     allowedExtensions: [ '.js' ],
     exclude: [ 'index.js' ],
     resolvePaths: true
@@ -48,11 +56,22 @@ export async function registerBuiltinSchemes() {
     paths: javascriptModules,
     pluckDefault: true,
     pluckModule: true
-  }) as Omit<Scheme, 'type'>[]
+  }) as Scheme[]
   const schemesRegistered = modules.map(module => (
-    registerScheme(Object.assign(module, {
+    registerScheme({
+      schemeClass: module,
       type: 'built-in'
-    } as const))
+    } as const)
   ))
+  return schemesRegistered.every(status => status === true)
+}
+
+export async function registerCustomSchemesFromPaths(paths: string[]) {
+  const modules = await loadModules({
+    paths,
+    pluckDefault: true,
+    pluckModule: true
+  }) as Scheme[]
+  const schemesRegistered = modules.map(registerCustomScheme)
   return schemesRegistered.every(status => status === true)
 }

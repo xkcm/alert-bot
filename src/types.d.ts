@@ -1,9 +1,30 @@
+import { Page } from 'puppeteer'
+
 export type OnProgressHandler = (message: string) => any;
 
-export interface Scheme {
-  name: string;
-  roundtrip: () => any;
-  type: 'built-in' | 'custom';
+export type Scheme<S = any> = Readonly<{
+  schemeName: string;
+  id: string;
+  description: string;
+  settings: SchemeOptions;
+  scrape(options: SchemeScrapeOptions): S
+}>
+
+interface SchemeOptions {
+  scraper?: {
+    sharedWindow?: boolean;
+    closePageAfter?: boolean;
+  }
+}
+
+interface SchemeScrapeOptions extends SchemeMethodInvokeOptions {
+  browserPage: Page
+}
+
+interface SchemeMethodInvokeOptions {
+  log: {
+    [k in 'info' | 'error' | 'warning']: (logObject: { event: string, message: string }) => void
+  }
 }
 
 export interface ListFilesInDirectoryOptions {
@@ -30,7 +51,7 @@ export namespace BotConfiguration {
   namespace Schemes {
     type BuiltinSchemeFilter<T> = {
       [K in keyof T]: {
-        name: K;
+        id: K;
         config: T[K];
       };
     }[keyof T]
@@ -38,6 +59,12 @@ export namespace BotConfiguration {
       'ola-finance': {
         thresholds: {
           liquidity?: number;
+        },
+        constants?: {
+          MAX_NAVIGATION_TIMEOUT?: number;
+          SITE_URL?: string;
+          TARGET_SELECTOR?: string;
+          TARGET_VALUE_SELECTOR?: string;
         }
       }
     }
@@ -75,6 +102,7 @@ export namespace BotConfiguration {
   }
   export interface Root {
     configs: Config[];
-    adminAlert: Record<string, AlertServiceConfigs.Combined>
+    adminAlert: Record<string, AlertServiceConfigs.Combined>;
+    customSchemes: string[];
   }
 }

@@ -1,5 +1,6 @@
+import { dirname, resolve } from 'path'
 import { loadJSONConfiguration, parseArgs } from './helpers'
-import { registerBuiltinSchemes } from './schemes'
+import { registerBuiltinSchemes, registerCustomSchemesFromPaths } from './schemes'
 import { BotConfiguration } from './types'
 
 // async function roundtrip() {
@@ -27,9 +28,12 @@ async function run() {
   //   await sendErrorMail(error, { onProgress: console.log })
   //   process.exit(0)
   // })
-  await registerBuiltinSchemes()
   const { c: configFilePath } = await parseArgs(process.argv)
   const config: BotConfiguration.Root = await loadJSONConfiguration({ path: configFilePath }).catch(errorHandler)
+  await registerBuiltinSchemes()
+  await registerCustomSchemesFromPaths(config.customSchemes.map(path => (
+    resolve(dirname(configFilePath), path))
+  ))
   return start(config)
 }
 
@@ -41,3 +45,4 @@ if (require.main === module)
   run().catch(console.error)
 
 export { registerCustomScheme } from './schemes/index'
+export type IConfiguration = BotConfiguration.Root
