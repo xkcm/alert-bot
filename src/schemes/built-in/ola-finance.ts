@@ -53,7 +53,7 @@ export class OlaFinanceScheme implements Scheme {
       }
       return [resolvedAsset, resolvedApy, resolvedWallet, resolvedLiquidity]
     }
-    const results = assetValues.map((values: [any, any, any, any]) => {
+    const results = assetValues.map((values: [string, string, number, { value: number, currency: 'USD' }]) => {
       const [asset, apy, wallet, liquidity] = parseValues(values)
       return { asset, apy, wallet, liquidity }
     })

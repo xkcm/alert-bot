@@ -2,7 +2,7 @@ import * as puppeteer from 'puppeteer'
 import { SCRAPED_SITE_URL, TARGET_SELECTOR, TARGET_VALUE_SELECTOR } from './consts'
 import { date } from './helpers'
 
-const createMessage = (content) => `[scraper] ${date()} ${content}`
+const createMessage = content => `[scraper] ${date()} ${content}`
 
 export async function scrapeAssets({ onProgress }) {
   const browser = await puppeteer.launch({

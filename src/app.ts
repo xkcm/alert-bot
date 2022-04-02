@@ -32,13 +32,13 @@ async function run() {
   const config: BotConfiguration.Root = await loadJSONConfiguration({ path: configFilePath }).catch(errorHandler)
   await registerBuiltinSchemes()
   await registerCustomSchemesFromPaths(config.customSchemes.map(path => (
-    resolve(dirname(configFilePath), path))
-  ))
+    resolve(dirname(configFilePath), path)
+  )))
   return start(config)
 }
 
 export async function start(config: BotConfiguration.Root) {
-
+  return config
 }
 
 if (require.main === module)

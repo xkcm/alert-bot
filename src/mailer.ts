@@ -4,7 +4,7 @@ import { MAILING_LIST_NOT_PROVIDED_ERROR_MESSAGE, INCORRECT_MAIL_CONFIG_ERROR_ME
 import { loadEnv, date } from './helpers'
 import { OnProgressHandler } from './types'
 
-const createMessage = (content) => `[mailer] ${date()} ${content}`
+const createMessage = content => `[mailer] ${date()} ${content}`
 
 export function loadMailingList() {
   const argIndex = process.argv.findIndex(arg => arg === '-u')
@@ -50,7 +50,7 @@ export function sendTestMails(mailingList, { onProgress }: { onProgress?: OnProg
 }
 
 export function sendAlertMails(mailEntries, { onProgress }: { onProgress: OnProgressHandler }) {
-  const createMailMessage = (entry) => {
+  const createMailMessage = entry => {
     return entry.assets.map(({ asset, liquidity }) => (
       `\nAsset: ${asset}\nLiquidity: ${liquidity.value} ${liquidity.currency}\n`
     )).join('\n')

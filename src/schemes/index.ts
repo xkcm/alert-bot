@@ -20,7 +20,7 @@ export function validateScheme(scheme: Scheme) {
   return true
 }
 
-export function getScheme(schemeName: string, silent: boolean = false) {
+export function getScheme(schemeName: string, silent = false) {
   const scheme = schemes.get(schemeName)
   if (!silent && !scheme) {
     throw new UndefinedSchemeError(schemeName)

@@ -1,8 +1,8 @@
 import { Page } from 'puppeteer'
 
-export type OnProgressHandler = (message: string) => any;
+export type OnProgressHandler = (message: string) => unknown;
 
-export type Scheme<S = any> = Readonly<{
+export type Scheme<S = unknown> = Readonly<{
   schemeName: string;
   id: string;
   description: string;
@@ -85,8 +85,12 @@ export namespace BotConfiguration {
       to: string;
       subject: string;
     }
-    interface Telegram {}
-    interface Signal {}
+    interface Telegram {
+      auth: string
+    }
+    interface Signal {
+      auth: string
+    }
 
     type All = {
       gmail: Gmail;
