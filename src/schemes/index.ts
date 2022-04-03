@@ -1,17 +1,17 @@
 import { resolve } from 'path'
 import { InvalidSchemeModuleError, SchemeNameConflictError, UndefinedSchemeError } from '../errors/schemes'
 import { listFilesInDirectory, loadModules } from '../helpers'
-import { Scheme } from '../types'
+import { SchemeModule } from '../types/scheme'
 
 type RegisteredScheme = {
-  schemeClass: Scheme,
+  schemeClass: SchemeModule,
   type: 'built-in' | 'custom'
 }
 
 const schemes = new Map<string, RegisteredScheme>()
 
-export function validateScheme(scheme: Scheme) {
-  const requiredProps = ['type', 'schemeName', 'roundtrip']
+export function validateScheme(scheme: SchemeModule) {
+  const requiredProps = ['type', 'schemeName', 'schemeClass', 'id', 'description']
   requiredProps.forEach(prop => {
     if (Reflect.has(scheme, prop)) {
       throw new InvalidSchemeModuleError(prop)
@@ -38,7 +38,7 @@ function registerScheme(scheme: RegisteredScheme) {
   return schemes.has(id)
 }
 
-export function registerCustomScheme(scheme: Scheme) {
+export function registerCustomScheme(scheme: SchemeModule) {
   return registerScheme({
     schemeClass: scheme,
     type: 'custom'
@@ -56,7 +56,7 @@ export async function registerBuiltinSchemes() {
     paths: javascriptModules,
     pluckDefault: true,
     pluckModule: true
-  }) as Scheme[]
+  }) as SchemeModule[]
   const schemesRegistered = modules.map(module => (
     registerScheme({
       schemeClass: module,
@@ -71,7 +71,7 @@ export async function registerCustomSchemesFromPaths(paths: string[]) {
     paths,
     pluckDefault: true,
     pluckModule: true
-  }) as Scheme[]
+  }) as SchemeModule[]
   const schemesRegistered = modules.map(registerCustomScheme)
   return schemesRegistered.every(status => status === true)
 }

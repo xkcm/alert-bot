@@ -1,8 +1,8 @@
 import { BotRuntimeError } from '.'
 
 export class SchemeNameConflictError extends BotRuntimeError {
-  constructor(public schemeName: string) {
-    super(`Scheme with name "${schemeName}" is already defined.`)
+  constructor(public schemeId: string) {
+    super(`Scheme with id "${schemeId}" is already defined.`)
   }
 }
 
@@ -13,7 +13,13 @@ export class InvalidSchemeModuleError extends BotRuntimeError {
 }
 
 export class UndefinedSchemeError extends BotRuntimeError {
-  constructor(public schemeName: string) {
-    super(`Scheme with name "${schemeName}" is undefined.`)
+  constructor(public schemeId: string) {
+    super(`Scheme with id "${schemeId}" is undefined.`)
+  }
+}
+
+export class UnknownAlertService extends BotRuntimeError {
+  constructor(public schemeId: string, public alertService: string) {
+    super(`Scheme with id "${schemeId}" has no defined payload function for alert service "${alertService}".`)
   }
 }

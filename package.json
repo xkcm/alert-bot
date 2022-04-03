@@ -13,6 +13,7 @@
     "yargs": "^17.4.0"
   },
   "devDependencies": {
+    "@types/nodemailer": "^6.4.4",
     "@types/yargs": "^17.0.10",
     "@typescript-eslint/eslint-plugin": "^5.17.0",
     "@typescript-eslint/parser": "^5.17.0",

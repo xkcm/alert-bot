@@ -1,5 +1,5 @@
 import { resolve } from 'path'
-import nodemailer from 'nodemailer'
+import * as nodemailer from 'nodemailer'
 import { MAILING_LIST_NOT_PROVIDED_ERROR_MESSAGE, INCORRECT_MAIL_CONFIG_ERROR_MESSAGE } from './consts'
 import { loadEnv, date } from './helpers'
 import { OnProgressHandler } from './types'
