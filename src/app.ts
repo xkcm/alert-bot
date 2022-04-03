@@ -1,7 +1,7 @@
-import { dirname, resolve } from 'path'
-import { loadJSONConfiguration, parseArgs } from './helpers'
-import { registerBuiltinSchemes, registerCustomSchemesFromPaths } from './schemes'
-import { BotConfiguration } from './types'
+import { dirname, resolve } from 'path';
+import { loadJSONConfiguration, parseArgs } from './helpers';
+import { registerBuiltinSchemes, registerCustomSchemesFromPaths } from './schemes';
+import { BotConfiguration } from './types';
 
 // async function roundtrip() {
 //   const assets = await Promise.race([
@@ -14,7 +14,7 @@ import { BotConfiguration } from './types'
 // }
 
 async function run() {
-  const errorHandler = (...args) => { console.log(...args) }
+  const errorHandler = (...args) => { console.log(...args); };
   // if (!process.argv.includes('--no-test')) {
   //   await sendTestMails(mailingList, { onProgress: console.log })
   // }
@@ -28,21 +28,20 @@ async function run() {
   //   await sendErrorMail(error, { onProgress: console.log })
   //   process.exit(0)
   // })
-  const { c: configFilePath } = await parseArgs(process.argv)
-  const config: BotConfiguration.Root = await loadJSONConfiguration({ path: configFilePath }).catch(errorHandler)
-  await registerBuiltinSchemes()
+  const { c: configFilePath } = await parseArgs(process.argv);
+  const config: BotConfiguration.Root = await loadJSONConfiguration({ path: configFilePath }).catch(errorHandler);
+  await registerBuiltinSchemes();
   await registerCustomSchemesFromPaths(config.customSchemes.map(path => (
     resolve(dirname(configFilePath), path)
-  )))
-  return start(config)
+  )));
+  return start(config);
 }
 
 export async function start(config: BotConfiguration.Root) {
-  return config
+  return config;
 }
 
-if (require.main === module)
-  run().catch(console.error)
+if (require.main === module) run().catch(console.error);
 
-export { registerCustomScheme } from './schemes/index'
+export { registerCustomScheme } from './schemes/index';
 export type IConfiguration = BotConfiguration.Root

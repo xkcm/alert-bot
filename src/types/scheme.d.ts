@@ -1,6 +1,6 @@
-import { Page } from 'puppeteer'
-import SchemeClass from '../schemes/scheme.class'
-import { BuiltinAlertServices, BuiltinAlertServicesPayloads } from './alert-services'
+import { Page } from 'puppeteer';
+import SchemeClass from '../schemes/scheme.class';
+import { BuiltinAlertServices, BuiltinAlertServicesPayloads } from './alert-services';
 
 export interface Scheme {
   settings: SchemeSettings;

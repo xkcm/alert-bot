@@ -1,4 +1,3 @@
-
 export type OnProgressHandler = (message: string) => unknown;
 
 export interface ListFilesInDirectoryOptions {

@@ -6,7 +6,7 @@ module.exports = {
   ],
   extends: [
     'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
+    'plugin:@typescript-eslint/recommended'
   ],
   rules: {
     'arrow-parens': ['warn', 'as-needed'],

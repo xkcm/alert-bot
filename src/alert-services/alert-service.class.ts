@@ -1,5 +1,7 @@
 export default abstract class AlertServiceClass {
-  abstract sendAlert(payload): Promise<unknown> | unknown;
-  abstract sendError(error): Promise<unknown> | unknown;
+  abstract sendAlert(payload: unknown): Promise<unknown> | unknown;
+
+  abstract sendError(error: unknown): Promise<unknown> | unknown;
+
   protected abstract config: unknown;
 }

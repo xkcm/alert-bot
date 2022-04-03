@@ -1,4 +1,4 @@
-import { BuiltinAlertServicesConfigs } from './alert-services'
+import { BuiltinAlertServicesConfigs } from './alert-services';
 
 export namespace BotConfiguration {
   namespace Schemes {
