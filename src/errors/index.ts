@@ -1,6 +1,6 @@
 export class BotRuntimeError extends Error {
   public static createCatcher(...args: unknown[]) {
-    return (originalError) => {
+    return originalError => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       throw new (this as any)(...args, originalError)
     }

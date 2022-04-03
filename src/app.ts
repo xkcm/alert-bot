@@ -22,6 +22,8 @@ export async function start(config: BotConfiguration.Root) {
   const tasks = Task.createTasksFromConfig(config.tasks, {
     start: true
   })
+  console.log(tasks)
+  // TODO: Add admin alerts
 }
 
 if (require.main === module) cliRun().catch(console.error)

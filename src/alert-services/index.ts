@@ -47,3 +47,5 @@ export async function registerBuiltinAlertServices() {
   )).every(status => status === true)
   return servicesRegistered
 }
+
+// TODO: Add registering custom alert services

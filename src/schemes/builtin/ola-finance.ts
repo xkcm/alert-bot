@@ -162,7 +162,7 @@ class OlaFinanceScheme implements Scheme {
 }
 
 export default {
-  create: (config) => new OlaFinanceScheme(config),
+  create: config => new OlaFinanceScheme(config),
   schemeName,
   description,
   id

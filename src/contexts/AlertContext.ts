@@ -25,6 +25,8 @@ export class AlertContext {
     this.alertServices = new Map()
     const allSet = Object.entries(config).map(([key, v]) => {
       this.alertServices.set(key, {
+        // TODO: Fix this
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         instance: getAlertServiceModule(v.service).create(v.config as any),
         id: v.service
       })
@@ -34,7 +36,8 @@ export class AlertContext {
   }
 
   public async send(payload: unknown) {
-    const promises = [...this.alertServices.entries()].map(([key, alertService]) => {
+    // TODO: Add error handling
+    const promises = [...this.alertServices.entries()].map(([, alertService]) => {
       const resolvedPayload = this.settings.complexPayload ? this.scheme.createAlertPayload(alertService.id, payload) : payload
       return alertService.instance.sendAlert(resolvedPayload)
     })
@@ -42,6 +45,6 @@ export class AlertContext {
   }
 
   public async postExecute() {
-    
+    return
   }
 }

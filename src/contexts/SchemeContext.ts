@@ -22,7 +22,7 @@ export default class SchemeContext {
     }
   }
 
-  public async postExecute(result: unknown){
+  public async postExecute(){
     await Promise.all([
       this.scraping.postExecute(),
       this.alert.postExecute()

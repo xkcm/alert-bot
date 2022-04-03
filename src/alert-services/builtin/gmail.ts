@@ -28,5 +28,5 @@ class GmailAlertService implements AlertService {
 
 export default {
   id: 'gmail',
-  create: (config) => new GmailAlertService(config)
+  create: config => new GmailAlertService(config)
 } as AlertServiceModule<GmailAlertServiceConfig>

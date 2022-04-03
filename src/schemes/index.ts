@@ -1,7 +1,6 @@
 import { resolve } from 'path'
 import { InvalidSchemeModuleError, SchemeNameConflictError, UndefinedSchemeError } from '../errors/schemes'
 import { listFilesInDirectory, loadModules } from '../helpers'
-import { BotConfiguration } from '../types/config'
 import { SchemeModule } from '../types/scheme'
 
 type RegisteredScheme = {
