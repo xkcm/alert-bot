@@ -1,69 +1,69 @@
-import { resolve } from 'path';
-import { InvalidSchemeModuleError, SchemeNameConflictError, UndefinedSchemeError } from '../errors/schemes';
-import { listFilesInDirectory, loadModules } from '../helpers';
-import { SchemeModule } from '../types/scheme';
+import { resolve } from 'path'
+import { InvalidSchemeModuleError, SchemeNameConflictError, UndefinedSchemeError } from '../errors/schemes'
+import { listFilesInDirectory, loadModules } from '../helpers'
+import { BotConfiguration } from '../types/config'
+import { SchemeModule } from '../types/scheme'
 
 type RegisteredScheme = {
-  schemeClass: SchemeModule,
+  schemeModule: SchemeModule,
   type: 'built-in' | 'custom'
 }
 
-const schemes = new Map<string, RegisteredScheme>();
+const schemes = new Map<string, RegisteredScheme>()
 
 export function validateScheme(scheme: SchemeModule) {
-  const requiredProps = ['type', 'schemeName', 'schemeClass', 'id', 'description'];
+  const requiredProps = ['schemeName', 'create', 'id', 'description']
   requiredProps.forEach(prop => {
-    if (Reflect.has(scheme, prop)) {
-      throw new InvalidSchemeModuleError(prop);
+    if (!Reflect.has(scheme, prop)) {
+      throw new InvalidSchemeModuleError(prop)
     }
-  });
-  return true;
+  })
+  return true
 }
 
-export function getScheme(schemeName: string, silent = false) {
-  const scheme = schemes.get(schemeName);
+export function getSchemeModule(schemeId: string, silent = false) {
+  const scheme = schemes.get(schemeId)
   if (!silent && !scheme) {
-    throw new UndefinedSchemeError(schemeName);
+    throw new UndefinedSchemeError(schemeId)
   }
-  return scheme;
+  return scheme.schemeModule
 }
 
 function registerScheme(scheme: RegisteredScheme) {
-  validateScheme(scheme.schemeClass);
-  const { id } = scheme.schemeClass;
+  validateScheme(scheme.schemeModule)
+  const { id } = scheme.schemeModule
   if (schemes.has(id)) {
-    throw new SchemeNameConflictError(id);
+    throw new SchemeNameConflictError(id)
   }
-  schemes.set(id, scheme);
-  return schemes.has(id);
+  schemes.set(id, scheme)
+  return schemes.has(id)
 }
 
 export function registerCustomScheme(scheme: SchemeModule) {
   return registerScheme({
-    schemeClass: scheme,
+    schemeModule: scheme,
     type: 'custom',
-  } as const);
+  } as const)
 }
 
 export async function registerBuiltinSchemes() {
   const javascriptModules = await listFilesInDirectory({
-    path: resolve(__dirname, 'built-in'),
+    path: resolve(__dirname, 'builtin'),
     allowedExtensions: ['.js'],
-    exclude: ['index.js'],
     resolvePaths: true,
-  });
+  })
   const modules = await loadModules({
     paths: javascriptModules,
     pluckDefault: true,
     pluckModule: true,
-  }) as SchemeModule[];
+  }) as SchemeModule[]
   const schemesRegistered = modules.map(module => (
     registerScheme({
-      schemeClass: module,
+      schemeModule: module,
       type: 'built-in',
     } as const)
-  ));
-  return schemesRegistered.every(status => status === true);
+  ))
+  return schemesRegistered.every(status => status === true)
 }
 
 export async function registerCustomSchemesFromPaths(paths: string[]) {
@@ -71,7 +71,7 @@ export async function registerCustomSchemesFromPaths(paths: string[]) {
     paths,
     pluckDefault: true,
     pluckModule: true,
-  }) as SchemeModule[];
-  const schemesRegistered = modules.map(registerCustomScheme);
-  return schemesRegistered.every(status => status === true);
+  }) as SchemeModule[]
+  const schemesRegistered = modules.map(registerCustomScheme)
+  return schemesRegistered.every(status => status === true)
 }

@@ -1,13 +1,8 @@
-import * as nodemailer from 'nodemailer';
-import { GmailAlertServiceConfig, GmailAlertServicePayload } from '../../types/alert-services';
-import AlertServiceClass from '../alert-service.class';
+import * as nodemailer from 'nodemailer'
+import { AlertService, AlertServiceModule, GmailAlertServiceConfig, GmailAlertServicePayload } from '../../types/alert-services'
 
-export default class GmailAlertService extends AlertServiceClass {
-  public static id = 'gmail';
-
-  constructor(protected config: GmailAlertServiceConfig) {
-    super();
-  }
+class GmailAlertService implements AlertService {
+  constructor(protected config: GmailAlertServiceConfig) {}
 
   sendError(): void {
     return
@@ -19,14 +14,19 @@ export default class GmailAlertService extends AlertServiceClass {
       from: this.config.auth.user,
       subject: payload.subject,
       text: payload.content,
-    }));
-    return Promise.all(mailPromises);
+    }))
+    return Promise.all(mailPromises)
   }
 
   protected getTransport() {
     return nodemailer.createTransport({
       service: 'gmail',
       auth: this.config.auth,
-    });
+    })
   }
 }
+
+export default {
+  id: 'gmail',
+  create: (config) => new GmailAlertService(config)
+} as AlertServiceModule<GmailAlertServiceConfig>

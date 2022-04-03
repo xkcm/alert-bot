@@ -1,47 +1,27 @@
-import { dirname, resolve } from 'path';
-import { loadJSONConfiguration, parseArgs } from './helpers';
-import { registerBuiltinSchemes, registerCustomSchemesFromPaths } from './schemes';
-import { BotConfiguration } from './types';
+import { dirname } from 'path'
+import { registerBuiltinAlertServices } from './alert-services'
+import { loadJSONConfiguration, parseArgs, resolveRelativePaths } from './helpers'
+import { registerBuiltinSchemes, registerCustomSchemesFromPaths } from './schemes'
+import Task from './Task'
+import { BotConfiguration } from './types/config'
 
-// async function roundtrip() {
-//   const assets = await Promise.race([
-//     scrapeAssets({ onProgress: console.log }), createTimeout(TIMEOUT_MS)
-//   ])
-//   const mailEntries = filterAssetsByThresholds(assets, mailingList)
-//   if (mailEntries.length > 0) {
-//     await sendAlertMails(mailEntries, { onProgress: console.log })
-//   }
-// }
-
-async function run() {
-  const errorHandler = (...args) => { console.log(...args); };
-  // if (!process.argv.includes('--no-test')) {
-  //   await sendTestMails(mailingList, { onProgress: console.log })
-  // }
-  // const { stop, task } = repeatTask({
-  //   timeInMs: INTERVAL_MS,
-  //   task: roundtrip
-  // }, { onProgress: content => console.log(`[scheduler] ${date()} ${content}`) })
-  // task.catch(async (error) => {
-  //   stop()
-  //   console.error(createMessage('Error occured:'), error)
-  //   await sendErrorMail(error, { onProgress: console.log })
-  //   process.exit(0)
-  // })
-  const { c: configFilePath } = await parseArgs(process.argv);
-  const config: BotConfiguration.Root = await loadJSONConfiguration({ path: configFilePath }).catch(errorHandler);
-  await registerBuiltinSchemes();
-  await registerCustomSchemesFromPaths(config.customSchemes.map(path => (
-    resolve(dirname(configFilePath), path)
-  )));
-  return start(config);
+async function cliRun() {
+  const { c: configFilePath } = await parseArgs(process.argv)
+  const config = await loadJSONConfiguration<BotConfiguration.Root>({ path: configFilePath })
+  if (config.customSchemes) {
+    await registerCustomSchemesFromPaths(
+      resolveRelativePaths(dirname(configFilePath), config.customSchemes)
+    )
+  }
+  return start(config)
 }
 
 export async function start(config: BotConfiguration.Root) {
-  return config;
+  await registerBuiltinAlertServices()
+  await registerBuiltinSchemes()
+  const tasks = Task.createTasksFromConfig(config.tasks, {
+    start: true
+  })
 }
 
-if (require.main === module) run().catch(console.error);
-
-export { registerCustomScheme } from './schemes/index';
-export type IConfiguration = BotConfiguration.Root
+if (require.main === module) cliRun().catch(console.error)

@@ -1,5 +1,10 @@
-export type OnProgressHandler = (message: string) => unknown;
+import { BotConfiguration } from './config'
+import { Scheme } from './scheme'
 
+export type OnProgressHandler = (message: string) => unknown;
+export type LogHandler = {
+  [key in 'info' | 'error' | 'warn']: (logObject: { event: string, message: string }) => void
+}
 export interface ListFilesInDirectoryOptions {
   path: string;
   allowedExtensions?: string[];
@@ -18,4 +23,14 @@ export interface LoadModulesOptions extends Omit<LoadModuleOptions, 'path'> {
 
 export interface LoadJSONConfigurationOptions {
   path: string;
+}
+
+export interface TaskConstructorOptions {
+  config: BotConfiguration.TaskConfig;
+  start?: boolean;
+}
+
+export interface ContextConstructorOptions {
+  scheme: Scheme;
+  config: BotConfiguration.TaskConfig;
 }

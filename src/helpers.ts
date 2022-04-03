@@ -1,46 +1,23 @@
-import * as dotenv from 'dotenv';
-import { readFile, readdir } from 'fs/promises';
-import { resolve, extname, basename } from 'path';
-import * as yargs from 'yargs';
-import { ConfigParseError, ConfigReadError, ModuleImportError } from './errors';
+import { readdir, readFile } from 'fs/promises'
+import { basename, extname, resolve } from 'path'
+import * as yargs from 'yargs'
+import { ConfigParseError, ConfigReadError, ModuleImportError } from './errors'
 import {
-  ListFilesInDirectoryOptions, LoadJSONConfigurationOptions, LoadModuleOptions, LoadModulesOptions,
-} from './types';
-
-const assetMap = new Map();
-
-export function filterAssetsByThresholds(results, mailingList) {
-  return mailingList.map(entry => {
-    const { threshold } = entry;
-    const filtered = results.filter(({ asset, liquidity: { value } }) => (
-      value >= threshold && (assetMap.get(asset) || 0) < threshold
-    ));
-    results.forEach(({ asset, liquidity: { value } }) => assetMap.set(asset, value));
-    return {
-      assets: filtered,
-      mailEntry: entry,
-    };
-  }).filter(({ assets }) => assets.length > 0);
-}
-
-export function loadEnv() {
-  return dotenv.config({
-    path: resolve(__dirname, '..', '.env'),
-  }).parsed;
-}
+  ListFilesInDirectoryOptions, LoadJSONConfigurationOptions, LoadModuleOptions, LoadModulesOptions
+} from './types'
 
 export function createTimeout(ms) {
-  return new Promise((res, rej) => setTimeout(() => rej(`Timeout of ${ms}ms exceeded.`), ms));
+  return new Promise((res, rej) => setTimeout(() => rej(`Timeout of ${ms}ms exceeded.`), ms))
 }
 
-export const date = () => new Date().toISOString();
+export const date = () => new Date().toISOString()
 
-export async function loadJSONConfiguration({ path }: LoadJSONConfigurationOptions) {
-  const content = await readFile(path).catch(ConfigReadError.createCatcher(path));
+export async function loadJSONConfiguration<T>({ path }: LoadJSONConfigurationOptions) {
+  const content = await readFile(path).catch(ConfigReadError.createCatcher(path))
   try {
-    return JSON.parse(content.toString());
+    return JSON.parse(content.toString()) as T
   } catch {
-    throw new ConfigParseError(path);
+    throw new ConfigParseError(path)
   }
 }
 
@@ -58,39 +35,48 @@ export function parseArgs(argv: string[]) {
       describe: 'Send bootup alert to the admin',
       type: 'string',
     })
-    .argv;
+    .argv
+}
+
+export function resolveRelativePaths(base: string, paths: string[]) {
+  return paths.map(path => resolve(base, path))
 }
 
 export async function listFilesInDirectory({
   path, allowedExtensions = [], exclude = [], resolvePaths = false,
 }: ListFilesInDirectoryOptions) {
-  console.log(path);
-  let files = await readdir(path);
+  console.log(path)
+  let files = await readdir(path)
   files = allowedExtensions.length > 0
     ? files.filter(file => allowedExtensions.includes(extname(file)))
-    : files;
+    : files
   files = exclude.length > 0
     ? files.filter(file => !exclude.includes(file))
-    : files;
+    : files
   files = resolvePaths
     ? files.map(file => resolve(path, file))
-    : files;
-  return files;
+    : files
+  return files
 }
 
 export async function loadModule<T>({ path, pluckModule = false, pluckDefault = false }: LoadModuleOptions) {
-  const moduleName = basename(path);
-  const module = await import(path).catch(ModuleImportError.createCatcher(moduleName, path));
+  const moduleName = basename(path)
+  let module = await import(path).catch(ModuleImportError.createCatcher(moduleName, path))
+  module = pluckDefault ? module.default : module
   return pluckModule ? module as T : {
-    module: (pluckDefault ? module.default : module) as T,
+    module,
     name: moduleName,
-  };
+  }
 }
 
 export function loadModules({ paths, ...rest }: LoadModulesOptions) {
-  return Promise.all(paths.map(path => loadModule({ path, ...rest })));
+  return Promise.all(paths.map(path => loadModule({ path, ...rest })))
 }
 
-export function staticImplements<T>() {
-  return <U extends T>(constructor: U) => { constructor; };
+export function randomId() {
+  return Math.random().toString(36).slice(2)
+}
+
+export function defaultValue(v, d) {
+  return v === undefined || v === null ? d : v 
 }

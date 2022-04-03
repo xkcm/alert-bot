@@ -36,10 +36,28 @@ export type BuiltinAlertServicesPayloads = {
   telegram: TelegramAlertServicePayload;
   signal: SignalAlertServicePayload;
 }
+
 export type BuiltinAlertServicesConfigs = {
   gmail: GmailAlertServiceConfig;
   telegram: TelegramAlertServiceConfig;
   signal: SignalAlertServiceConfig;
 }
 
+export type AlertServiceConfig = {
+  [K in keyof BuiltinAlertServicesConfigs]: {
+    service: K;
+    config: BuiltinAlertServicesConfigs[K]
+  }
+}[keyof BuiltinAlertServicesConfigs]
+
 export type BuiltinAlertServices = Extract<keyof BuiltinAlertServicesPayloads, keyof BuiltinAlertServicesConfigs>
+
+export interface AlertServiceModule<T = AlertServiceConfig> {
+  create(config: T): AlertService;
+  id: string;
+}
+
+export interface AlertService<P = unknown> {
+  sendAlert(payload: P): Promise<unknown> | unknown;
+  sendError(error: Error): Promise<unknown> | unknown;
+}
