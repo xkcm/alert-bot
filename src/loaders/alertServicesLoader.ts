@@ -20,9 +20,9 @@ export function registerAlertService(alertService: RegisteredAlertService) {
   return alertServices.has(id)
 }
 
-export function getAlertServiceModule(id: string) {
-  const alertService = [...alertServices.values()].find(service => service.alertServiceModule.id === id)
-  if (!alertService) {
+export function getAlertServiceModule(id: string, silent = false) {
+  const alertService = alertServices.get(id)
+  if (!silent && !alertService) {
     throw new UndefinedAlertServiceError(id)
   }
   return alertService.alertServiceModule
