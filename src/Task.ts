@@ -1,6 +1,7 @@
 import SchemeContext from './contexts/SchemeContext'
-import { createTimeout, defaultValue, randomId } from './helpers'
-import { getSchemeModule } from './schemes'
+import { TaskStoppedError } from './errors/Task.errors'
+import { createErrorIgnoringHandler, createTimeout, defaultValue, delay, randomId } from './helpers'
+import { getSchemeModule } from './loaders/schemesLoader'
 import { TaskConstructorOptions } from './types'
 import { BotConfiguration } from './types/config'
 import { Scheme } from './types/scheme'
@@ -27,12 +28,11 @@ export default class Task {
   protected context: SchemeContext
   protected isStopped = false
   protected isRunning = false
-  protected interval: number
   protected timeout: number
+  protected tmp: Record<string, any> = {}
 
   constructor(private scheme: Scheme, options: TaskConstructorOptions) {
     this.id = randomId()
-    this.interval = defaultValue(options.config.config.interval, Task.DEFAULT_INTERVAL)
     this.timeout = defaultValue(options.config.config.timeout, Task.DEFAULT_TIMEOUT)
     this.context = new SchemeContext({
       scheme,
@@ -41,48 +41,95 @@ export default class Task {
     if (options.start) this.start()
   }
 
-  start() {
-    const repeat = async () => {
-      const result = await this.scheduleAndWait()
-      this.context.postExecute(result)
-      if (this.isStopped) {
-        this.isRunning = false
-      } else {
-        return repeat()
+  async start() {
+    const { runOnce, runImmediately } = this.scheme.settings.schedule
+    if (runImmediately) {
+      const result = await this.runScheme()
+      if (runOnce) {
+        await this.clear()
+        return result
       }
-      return result
     }
-    this.isRunning = true
-    return repeat()
+    if (this.getInterval()) {
+      if (runOnce) {
+        await this.waitAndExecute()
+      }
+      else {
+        return this.repeat()
+      }
+    }
+    return this.clear()
   }
 
   stop() {
     this.isStopped = true
   }
 
-  private scheduleAndWait() {
-    return new Promise((res, rej) => {
-      setTimeout(async() => {
-        try {
-          console.log('[task] executing task')
-          const result = await this.executeTask()
-          console.log('[task] task executed')
-          res(result)
-        } catch (error) {
-          rej(error)
-        }
-      }, this.interval)
-      console.log('[task] task scheduled')
-    })
+  protected async clear() {
+    await this.context.terminate()
+    this.safelyClearTimeouts()
+    this.context = null
   }
 
-  private executeTask() {
+  protected async executeRepeated() {
+    const result = await this.waitAndExecute()
+    this.safelyClearTimeouts()
+    this.context.postExecute(result)
+    if (this.isStopped) {
+      this.isRunning = false
+      this.clear()
+      return result
+    } 
+    return this.executeRepeated()
+  }
+
+  protected repeat() {
+    this.isRunning = true
+    return this.executeRepeated()
+  }
+
+  protected async handleError(error: Error) {
+    await this.context.adminAlert.send(error)
+  }
+
+  protected async waitAndExecute() {
+    const delayPromise = delay(this.getInterval())
+    this.tmp.delayTimeoutId = delayPromise.timeoutId
+    await delayPromise
+    return this.runScheme().catch(createErrorIgnoringHandler(TaskStoppedError))
+  }
+
+  protected runScheme() {
+    if (this.isStopped) {
+      return Promise.reject(new TaskStoppedError(this.id))
+    }
     const promises = [
       this.scheme.callback(this.context)
     ]
     if (this.timeout > 0) {
-      promises.push(createTimeout(this.timeout))
+      const timeout = createTimeout(this.timeout)
+      this.tmp.timeoutId = timeout.timeoutId
+      promises.push(timeout)
     }
-    return Promise.race(promises)
+    return Promise.race(promises).catch(error => {
+      if (this.scheme.settings.endOnError) {
+        this.stop()
+        this.clear()
+      }
+      return this.handleError(error)
+    })
+  }
+
+  protected getInterval() {
+    const { repeatEvery, calculateInterval } = this.scheme.settings.schedule
+    return repeatEvery || calculateInterval?.()
+  }
+
+  protected safelyClearTimeouts() {
+    try { clearTimeout(this.tmp.timeoutId) }
+    catch {}
+    
+    try { clearTimeout(this.tmp.delayTimeoutId) }
+    catch {}
   }
 }

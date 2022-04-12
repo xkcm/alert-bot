@@ -1,4 +1,4 @@
-import { getAlertServiceModule } from '../alert-services'
+import { getAlertServiceModule } from '../loaders/alertServicesLoader'
 import { defaultValue } from '../helpers'
 import { ContextConstructorOptions } from '../types'
 import { AlertService, AlertServiceConfig, BuiltinAlertServices } from '../types/alert-services'
@@ -45,6 +45,10 @@ export class AlertContext {
   }
 
   public async postExecute() {
+    return
+  }
+
+  public async terminate() {
     return
   }
 }

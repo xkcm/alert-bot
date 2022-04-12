@@ -1,5 +1,5 @@
 import * as nodemailer from 'nodemailer'
-import { AlertService, AlertServiceModule, GmailAlertServiceConfig, GmailAlertServicePayload } from '../../types/alert-services'
+import { AlertService, AlertServiceModule, GmailAlertServiceConfig, GmailAlertServicePayload } from '../../../types/alert-services'
 
 class GmailAlertService implements AlertService {
   constructor(protected config: GmailAlertServiceConfig) {}

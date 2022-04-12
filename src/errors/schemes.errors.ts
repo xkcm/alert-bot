@@ -1,4 +1,4 @@
-import { BotRuntimeError } from '.'
+import { BotRuntimeError } from './index.errors'
 
 export class SchemeNameConflictError extends BotRuntimeError {
   constructor(public schemeId: string) {

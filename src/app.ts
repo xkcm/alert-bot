@@ -1,7 +1,7 @@
 import { dirname } from 'path'
-import { registerBuiltinAlertServices } from './alert-services'
+import { registerBuiltinAlertServices } from './loaders/alertServicesLoader'
 import { loadJSONConfiguration, parseArgs, resolveRelativePaths } from './helpers'
-import { registerBuiltinSchemes, registerCustomSchemesFromPaths } from './schemes'
+import { registerBuiltinSchemes, registerCustomSchemesFromPaths } from './loaders/schemesLoader'
 import Task from './Task'
 import { BotConfiguration } from './types/config'
 

@@ -1,4 +1,5 @@
 import * as puppeteer from 'puppeteer'
+import { CannotCloseSharedBrowserError } from '../errors/ScrapingContext.errors'
 import { defaultValue } from '../helpers'
 import { ContextConstructorOptions } from '../types'
 import { SchemeSettings } from '../types/scheme'
@@ -37,12 +38,12 @@ export class ScrapingContext {
   private async getBrowser(): Promise<puppeteer.Browser> {
     if (this.settings.useSharedBrowser) {
       const browser = await this.getSharedBrowser()
-      return Object.assign(browser, {
+      return Object.assign(Object.create(browser), {
         async close(force: boolean) {
           if (force) {
             return browser.close()
           }
-          throw new Error('Cannot close shared browser.')
+          throw new CannotCloseSharedBrowserError()
         }
       })
     }
@@ -61,6 +62,19 @@ export class ScrapingContext {
     if (this.settings.closePageAfter) {
       await this.openedPage.close()
       this.openedPage = null
+    }
+  }
+
+  public async terminate() {
+    if (this.openedPage) {
+      try { await this.openedPage.close() }
+      catch {}
+      this.openedPage = null
+    }
+    if (ScrapingContext.SharedBrowser) {
+      try { await (ScrapingContext.SharedBrowser.close as any)(true) }
+      catch {}
+      ScrapingContext.SharedBrowser = null
     }
   }
 }

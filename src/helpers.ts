@@ -1,13 +1,14 @@
 import { readdir, readFile } from 'fs/promises'
 import { basename, extname, resolve } from 'path'
 import * as yargs from 'yargs'
-import { ConfigParseError, ConfigReadError, ModuleImportError } from './errors'
+import { ConfigParseError, ConfigReadError, ModuleImportError } from './errors/index.errors'
 import {
   ListFilesInDirectoryOptions, LoadJSONConfigurationOptions, LoadModuleOptions, LoadModulesOptions
 } from './types'
 
 export function createTimeout(ms) {
-  return new Promise((res, rej) => setTimeout(() => rej(`Timeout of ${ms}ms exceeded.`), ms))
+  let timeoutId
+  return Object.assign(new Promise((res, rej) => timeoutId = setTimeout(() => rej(`Timeout of ${ms}ms exceeded.`), ms)), { timeoutId })
 }
 
 export const date = () => new Date().toISOString()
@@ -45,7 +46,6 @@ export function resolveRelativePaths(base: string, paths: string[]) {
 export async function listFilesInDirectory({
   path, allowedExtensions = [], exclude = [], resolvePaths = false,
 }: ListFilesInDirectoryOptions) {
-  console.log(path)
   let files = await readdir(path)
   files = allowedExtensions.length > 0
     ? files.filter(file => allowedExtensions.includes(extname(file)))
@@ -79,4 +79,16 @@ export function randomId() {
 
 export function defaultValue(v, d) {
   return v === undefined || v === null ? d : v 
+}
+
+export function delay(ms: number) {
+  let timeoutId
+  return Object.assign(new Promise(res => timeoutId = setTimeout(res, ms)), { timeoutId })
+}
+
+export function createErrorIgnoringHandler(...instances: any[]) {
+  return (error: Error) => {
+    const isIgnored = instances.some(instance => error instanceof instance)
+    if (!isIgnored) throw error
+  }
 }

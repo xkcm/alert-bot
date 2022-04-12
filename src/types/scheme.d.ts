@@ -31,6 +31,13 @@ interface SchemeSettings {
   alert?: {
     complexPayload?: boolean;
   };
+  schedule?: {
+    runImmediately?: boolean;
+    repeatEvery?: number;
+    runOnce?: boolean;
+    calculateInterval?: () => number;
+  };
+  endOnError?: boolean;
 }
 
 export type SchemeConfig = {

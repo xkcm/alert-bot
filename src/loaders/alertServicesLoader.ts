@@ -1,6 +1,6 @@
 import { resolve } from 'path'
-import { UndefinedAlertServiceError } from '../errors/alert-services'
-import { SchemeNameConflictError } from '../errors/schemes'
+import { UndefinedAlertServiceError } from '../errors/AlertService.errors'
+import { SchemeNameConflictError } from '../errors/schemes.errors'
 import { listFilesInDirectory, loadModules } from '../helpers'
 import { AlertServiceModule } from '../types/alert-services'
 
@@ -29,13 +29,12 @@ export function getAlertServiceModule(id: string) {
 }
 
 export async function registerBuiltinAlertServices() {
-  const javascriptModules = await listFilesInDirectory({
-    path: resolve(__dirname, 'builtin'),
-    allowedExtensions: [ '.js' ],
+  const modulePaths = await listFilesInDirectory({
+    path: resolve(__dirname, '../builtin/alert-services'),
     resolvePaths: true
   })
   const modules = await loadModules({
-    paths: javascriptModules,
+    paths: modulePaths,
     pluckDefault: true,
     pluckModule: true
   }) as AlertServiceModule[]

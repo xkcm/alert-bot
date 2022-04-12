@@ -1,7 +1,8 @@
-import SchemeContext from '../../contexts/SchemeContext'
-import { UnknownAlertService } from '../../errors/schemes'
-import { BuiltinAlertServicesPayloads } from '../../types/alert-services'
-import { OlaFinanceSchemeConfig, Scheme, SchemeModule, SchemeSettings } from '../../types/scheme'
+import { boolean } from 'yargs'
+import SchemeContext from '../../../contexts/SchemeContext'
+import { UnknownAlertService } from '../../../errors/schemes.errors'
+import { BuiltinAlertServicesPayloads } from '../../../types/alert-services'
+import { OlaFinanceSchemeConfig, Scheme, SchemeModule, SchemeSettings } from '../../../types/scheme'
 
 interface DataEntry {
   asset: string
@@ -35,12 +36,16 @@ class OlaFinanceScheme implements Scheme {
 
   public settings: SchemeSettings = {
     scraping: {
-      closePageAfter: true,
+      closePageAfter: false,
       useSharedBrowser: true
     },
     alert: {
       complexPayload: true,
     },
+    schedule: {
+      repeatEvery: 5000,
+      runOnce: true,
+    }
   }
 
   private lastValues = new Map<keyof DataEntry, unknown>()

@@ -1,5 +1,5 @@
 import { resolve } from 'path'
-import { InvalidSchemeModuleError, SchemeNameConflictError, UndefinedSchemeError } from '../errors/schemes'
+import { InvalidSchemeModuleError, UndefinedSchemeError, SchemeNameConflictError } from '../errors/schemes.errors'
 import { listFilesInDirectory, loadModules } from '../helpers'
 import { SchemeModule } from '../types/scheme'
 
@@ -46,13 +46,12 @@ export function registerCustomScheme(scheme: SchemeModule) {
 }
 
 export async function registerBuiltinSchemes() {
-  const javascriptModules = await listFilesInDirectory({
-    path: resolve(__dirname, 'builtin'),
-    allowedExtensions: ['.js'],
+  const modulePaths = await listFilesInDirectory({
+    path: resolve(__dirname, '../builtin/schemes'),
     resolvePaths: true,
   })
   const modules = await loadModules({
-    paths: javascriptModules,
+    paths: modulePaths,
     pluckDefault: true,
     pluckModule: true,
   }) as SchemeModule[]
